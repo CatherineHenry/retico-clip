@@ -103,7 +103,7 @@ class ClipObjectFeatures(retico_core.AbstractModule):
                 if self.show:
                     # print(sub.getbands())
                     # sub = sub.convert("BGR")
-                    sub.show()                
+                    sub_img.show()
 
                 # sub_img = Image.fromarray(sub_img)
                 # sub_img.load()
@@ -113,7 +113,13 @@ class ClipObjectFeatures(retico_core.AbstractModule):
                     yhat = self.model.encode_image(img).cpu().numpy()
                     object_features[i] = yhat.tolist()
 
+
             output_iu = self.create_iu(input_iu)
+
+            output_iu.set_flow_uuid(input_iu.flow_uuid)
+            output_iu.set_execution_uuid(input_iu.execution_uuid)
+            output_iu.set_motor_action(input_iu.motor_action)
+
             output_iu.set_object_features(image, object_features)
             um = retico_core.UpdateMessage.from_iu(output_iu, retico_core.UpdateType.ADD)
             self.append(um)
