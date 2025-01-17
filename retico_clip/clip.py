@@ -87,12 +87,14 @@ class ClipObjectFeatures(retico_core.AbstractModule):
             input_iu = self.queue.popleft()
             image = input_iu.image
             detected_objects = input_iu.extracted_objects
+            image_position_feats = input_iu.image_position_feats
             object_features = {}
 
             for i, obj in enumerate(detected_objects):
                 # sub_img = self.get_clip_subimage(image, obj)
                 if i>=self.top_objects: break
                 sub_img = detected_objects[obj]
+                position_feats = image_position_feats[obj]
                 
                 # if self.show:
                 #     import cv2
@@ -105,13 +107,10 @@ class ClipObjectFeatures(retico_core.AbstractModule):
                     # sub = sub.convert("BGR")
                     sub_img.show()
 
-                # sub_img = Image.fromarray(sub_img)
-                # sub_img.load()
-
                 with torch.no_grad():
                     img = self.preprocess(sub_img).unsqueeze(0).to(self.device)
                     yhat = self.model.encode_image(img).cpu().numpy()
-                    object_features[i] = yhat.tolist()
+                    object_features[i] = np.hstack([position_feats, yhat]).tolist()
 
 
             output_iu = self.create_iu(input_iu)
@@ -120,7 +119,7 @@ class ClipObjectFeatures(retico_core.AbstractModule):
             output_iu.set_execution_uuid(input_iu.execution_uuid)
             output_iu.set_motor_action(input_iu.motor_action)
 
-            output_iu.set_object_features(image, object_features)
+            output_iu.set_object_features(image, object_features, input_iu.image_bbox)
             um = retico_core.UpdateMessage.from_iu(output_iu, retico_core.UpdateType.ADD)
             self.append(um)
     
