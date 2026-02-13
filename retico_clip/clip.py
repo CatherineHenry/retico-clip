@@ -114,11 +114,6 @@ class ClipObjectFeatures(retico_core.AbstractModule):
 
 
             output_iu = self.create_iu(input_iu)
-
-            output_iu.set_flow_uuid(input_iu.flow_uuid)
-            output_iu.set_execution_uuid(input_iu.execution_uuid)
-            output_iu.set_motor_action(input_iu.motor_action)
-
             output_iu.set_payload(image, object_features, input_iu.image_bbox)
             um = retico_core.UpdateMessage.from_iu(output_iu, retico_core.UpdateType.ADD)
             self.append(um)
